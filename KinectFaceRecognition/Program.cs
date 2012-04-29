@@ -33,7 +33,7 @@ namespace KinectFaceRecognition
         {
              var colorImageFrame = e.OpenColorImageFrame();
              if (colorImageFrame != null)
-             {no
+             {
                  var face = new FaceDetectionRecognition();
                  var pixelData = new byte[colorImageFrame.PixelDataLength];
                  colorImageFrame.CopyPixelDataTo(pixelData);
