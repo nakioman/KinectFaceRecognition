@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace KinectFaceRecognition.Model
@@ -14,14 +15,12 @@ namespace KinectFaceRecognition.Model
 
         public Bitmap GetBitmap()
         {
-            var bitmap = new Bitmap(Width, Height, PixelFormat.Format32bppRgb);
-            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, bitmap.PixelFormat);
-            var ptr = bitmapData.Scan0;
-
-            Marshal.Copy(PixelData, 0, ptr, PixelData.Length);
-            bitmap.UnlockBits(bitmapData);
-
-            return bitmap;
+            using (var ms = new MemoryStream(PixelData))
+            {
+                var bitmap = new Bitmap(ms);
+                return bitmap;
+            }
+            
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Emgu.CV.CvEnum;
@@ -14,7 +15,7 @@ namespace KinectFaceRecognition
 {
     public class FaceDetectionRecognition
     {
-        public HaarCascade Face = new HaarCascade("Cascades/haarcascade_frontalface_alt2.xml");//haarcascade_frontalface_alt_tree.xml");
+        public HaarCascade Face = new HaarCascade("Cascades/haarcascade_frontalface_alt_tree.xml");//haarcascade_frontalface_alt_tree.xml");
         public HaarCascade Mouth = new HaarCascade("Cascades/haarcascade_mcs_mouth.xml");
 
         private const int FaceDataWidth = 100;
@@ -51,7 +52,7 @@ namespace KinectFaceRecognition
             return null;
         }
 
-        private static Bitmap BytesToBitmap(byte[] pixelData, int height, int width)
+        public static Bitmap BytesToBitmap(byte[] pixelData, int height, int width)
         {
             var bitmap = new Bitmap(width, height, PixelFormat.Format32bppRgb);
             var bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, bitmap.PixelFormat);
@@ -97,7 +98,7 @@ namespace KinectFaceRecognition
                 if (ids.Any())
                 {
                     var termCrit = new MCvTermCriteria(ids.Count(), 0.001);
-                    var recognizedFaces = new EigenObjectRecognizer(faces.ToArray(), ids.ToArray(), ref termCrit);
+                    var recognizedFaces = new EigenObjectRecognizer(faces.ToArray(), ids.ToArray(), 2500, ref termCrit);
 
                     var label = recognizedFaces.Recognize(face);
 
@@ -118,11 +119,18 @@ namespace KinectFaceRecognition
         {
             using (var context = new FaceRecognitionContext())
             {
+                byte[] pixelData;
+                using(var ms = new MemoryStream())
+        {
+            detectedFace.Bitmap.Save(ms, ImageFormat.Bmp);
+            pixelData = ms.ToArray();
+        }
+                
                 var recognizedFace = new RecognizedFace
                                          {
                                              Height = detectedFace.Height,
                                              Width = detectedFace.Width,
-                                             PixelData = detectedFace.Bytes
+                                             PixelData = pixelData
                                          };
                 var user = new User
                                {
